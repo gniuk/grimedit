@@ -21,7 +21,11 @@ class Simed(QWidget):
 
     def initUI(self, image_path, image_content):
         label = QLabel(self)
-        pixmap = QPixmap(image_path)
+        if image_path:
+            pixmap = QPixmap(image_path)
+        else:
+            pixmap = QPixmap()
+            pixmap.loadFromData(image_content)
         label.setPixmap(pixmap)
         self.resize(pixmap.width(),pixmap.height())
         self.setWindowTitle("simed")
@@ -34,8 +38,14 @@ class Simed(QWidget):
             self.close()
 
 if __name__ == '__main__':
-    # app = QApplication(sys.argv)
     app = QApplication([])
-    # simed = Simed('./sample.png')
-    simed = Simed(sys.argv[1])
+
+    if len(sys.argv) > 1:
+        image_path = sys.argv[1]
+        image_content = None
+    else:
+        image_path = None
+        with open(0, 'rb') as f:
+            image_content = f.read()
+    simed = Simed(image_path, image_content)
     sys.exit(app.exec_())
