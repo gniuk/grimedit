@@ -6,6 +6,7 @@
 """
 
 import sys
+import copy
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow
 from PyQt5.QtGui import QPixmap, QPainter, QBrush, QPen
@@ -43,12 +44,11 @@ class Simed(QWidget):
         self.selectedTool = None
 
         self.penStyle = QPen(Qt.red, 4)
+        self.undoStack = []     # push pixmap snapshot into stack before a drawing on current pixmap
 
-        # now try to paint
-        # self.paint(self)
     def paintEvent(self, e):
         # need a new painter each time
-        print("Paint?")
+        # print("Paint?")
         # self.painter.begin(self) # what is begin?
         # painter = QPainter(self) # draw on widget just for animate drawing
         # painter = self.painter
@@ -68,19 +68,28 @@ class Simed(QWidget):
     def keyPressEvent(self, e):
         """Override the default key press event handler.
         """
+        # print(dir(e))
         if e.key() == Qt.Key_Escape:
             # save the image to file for debugging
             self.pixmap.save("/tmp/fordebug.png", "PNG")
             # self.grab().save("/tmp/fordebug.png", "PNG")
             self.close()
+        if e.modifiers() & Qt.ControlModifier:
+            if e.key() == Qt.Key_Z:
+                if self.undoStack:
+                    self.pixmap = self.undoStack.pop()
+                    print("old pixmap at: {}".format(self.pixmap))
+                    # self.painter.begin(self)
+                    # self.painter.drawPixmap(self.pixmap.rect(), self.pixmap)
+                    # self.painter.end()
+                    self.update()
+
 
     def mousePressEvent(self, e):
         print(type(e))
-        # print(dir(e))
         self.startX = e.x()
         self.startY = e.y()
         print(self.startX, self.startY)
-        # print(e.DragEnter)
         self.mousePressed = True
         # if self.selectedTool == 1:
 
@@ -89,8 +98,9 @@ class Simed(QWidget):
         self.endY = e.y()
         print(self.endX, self.endY)
         self.mousePressed = False
-        # save the previous lines or rects here to redraw in the paintEvent?
-        # self.prevDraw.append(self.mRect)
+        # save the pixmap snapshot for undo
+        self.undoStack.append(QPixmap(self.pixmap))
+        print("modified pixmap at {}".format(self.pixmap))
         painter = QPainter(self.pixmap) # do the pixmap change! Maybe use stack to save state for undo.
         painter.setPen(self.penStyle)
         painter.drawRect(self.startX,self.startY, self.endX-self.startX,self.endY-self.startY)
@@ -105,7 +115,6 @@ class Simed(QWidget):
         print("mousebuttonpress:{},{}".format(e.MouseButtonPress, type(e.MouseButtonPress)))
         # if (e.MouseButtonPress):
         if self.mousePressed:
-            # print("mousebuttonpress:{},{}".format(e.MouseButtonPress, type(e.MouseButtonPress)))
             print(type(e),type(e.MouseButtonPress))
             print("origin: ({}, {})".format(x, y))
             self.update()
