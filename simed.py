@@ -36,7 +36,7 @@ class Simed(QWidget):
         self.show()
 
     def initStatus(self):
-        # self.painter = QPainter(self.pixmap)
+        self.painter = QPainter(self)
         self.mousePressed = False # contained in event. maybe not needed
         self.mouseReleased = True
         self.drawStarted = False
@@ -48,20 +48,20 @@ class Simed(QWidget):
         # need a new painter each time
         print("Paint?")
         # self.painter.begin(self) # what is begin?
-        painter = QPainter(self) # draw on widget just for animate drawing
+        # painter = QPainter(self) # draw on widget just for animate drawing
         # painter = self.painter
-        # painter.begin(self)
-        painter.drawPixmap(self.pixmap.rect(), self.pixmap) # if I draw, then I don't need label to show?
+        self.painter.begin(self)
+        self.painter.drawPixmap(self.pixmap.rect(), self.pixmap) # if I draw, then I don't need label to show?
         print("what is self.rect(): {}, {}".format(self.rect(), dir(self.rect)))
         # if (ev.MouseButtonPress):
         if self.mousePressed:
             # painter.drawPixmap(self.rect(), self.pixmap)
             # painter.setPen(QPen(Qt.red, 4, Qt.DashDotLine))
-            painter.setPen(QPen(Qt.red, 4))
+            self.painter.setPen(QPen(Qt.red, 4))
             # painter.drawRect(40,40,400,200)
-            painter.drawRect(self.startX,self.startY, self.endX-self.startX,self.endY-self.startY)
+            self.painter.drawRect(self.startX,self.startY, self.endX-self.startX,self.endY-self.startY)
             # painter.drawPixmap(self.rect(), self.pixmap)
-        painter.end()
+        self.painter.end()
 
     def keyPressEvent(self, e):
         """Override the default key press event handler.
