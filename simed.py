@@ -42,6 +42,8 @@ class Simed(QWidget):
         self.drawStarted = False
         self.selectedTool = None
 
+        self.penStyle = QPen(Qt.red, 4)
+
         # now try to paint
         # self.paint(self)
     def paintEvent(self, e):
@@ -57,7 +59,7 @@ class Simed(QWidget):
         if self.mousePressed:
             # painter.drawPixmap(self.rect(), self.pixmap)
             # painter.setPen(QPen(Qt.red, 4, Qt.DashDotLine))
-            self.painter.setPen(QPen(Qt.red, 4))
+            self.painter.setPen(self.penStyle)
             # painter.drawRect(40,40,400,200)
             self.painter.drawRect(self.startX,self.startY, self.endX-self.startX,self.endY-self.startY)
             # painter.drawPixmap(self.rect(), self.pixmap)
@@ -90,7 +92,7 @@ class Simed(QWidget):
         # save the previous lines or rects here to redraw in the paintEvent?
         # self.prevDraw.append(self.mRect)
         painter = QPainter(self.pixmap) # do the pixmap change! Maybe use stack to save state for undo.
-        painter.setPen(QPen(Qt.red, 4))
+        painter.setPen(self.penStyle)
         painter.drawRect(self.startX,self.startY, self.endX-self.startX,self.endY-self.startY)
         painter.end()
         self.update() # BAD, rect disappear on widget. But the pixmap changed, so not matter.
