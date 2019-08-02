@@ -244,5 +244,7 @@ if __name__ == '__main__':
         image_path = None
         with open(0, 'rb') as f:
             image_content = f.read()
+            if not image_content:
+                sys.exit(1)
     simed = Simed(image_path, image_content)
     sys.exit(app.exec_())
