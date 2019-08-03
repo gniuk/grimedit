@@ -141,7 +141,7 @@ class Simed(QWidget):
             print("old pixmap at: {}".format(self.pixmap))
             self.update()
 
-    def g_saveWithClipboard(self):
+    def genImagePath(self):
         picDir = os.path.expanduser('~') + '/Picture'
         try:
             # Maybe the best compatibility :)
@@ -154,9 +154,24 @@ class Simed(QWidget):
         except:
             pass
         pic = "".join([screentShotDir, '/', time.strftime("%Y%m%d-%H-%M-%S"), '.png'])
+        return pic
+
+    def g_saveWithClipboard(self):
+        pic = self.genImagePath()
         self.pixmap.save(pic, 'PNG')
         with open(pic, 'rb') as f:
             subprocess.Popen(['wl-copy'], stdin=f)
+        self.g_quit()
+
+    def g_saveToClipboard(self):
+        pic = self.genImagePath()
+        self.pixmap.save(pic, 'PNG')
+        with open(pic, 'rb') as f:
+            subprocess.Popen(['wl-copy'], stdin=f)
+        try:
+            os.remove(pic)
+        except:
+            pass
         self.g_quit()
 
     def g_quit(self):
@@ -259,7 +274,7 @@ class ToolPanel(QWidget):
         self.finishBtn.setIcon(QIcon(icondir+'finish.png'))
         self.finishBtn.setFixedSize(35,35)
         self.finishBtn.setIconSize(QSize(25,23))
-        self.finishBtn.clicked.connect(self.mWindow.g_saveWithClipboard)
+        self.finishBtn.clicked.connect(self.mWindow.g_saveToClipboard)
 
         self.hLayout = QHBoxLayout()
         self.hLayout.addWidget(self.rectBtn)
