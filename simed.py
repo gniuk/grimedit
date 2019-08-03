@@ -13,30 +13,34 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow
 from PyQt5.QtGui import QPixmap, QPainter, QBrush, QPen
 # import ToolPanel
-from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QToolButton
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QRect
+from PyQt5.QtWidgets import QHBoxLayout, QToolButton
+from PyQt5.QtGui import QIcon, QScreen
+from PyQt5.QtCore import QSize
 
 # class Simed(QMainWindow):
 class Simed(QWidget):
 
-    def __init__(self, image_path=None, image_content=None):
+    def __init__(self, image_path=None, image_content=None, phyScrH=1080):
         if image_path==None and image_content==None:
             print("No image input. Exit.")
             sys.exit(1)
         super().__init__()
-        self.initUI(image_path, image_content)
+        self.initUI(image_path, image_content, phyScrH)
         self.initStatus()
         self.initPanelUI()
 
-    def initUI(self, image_path, image_content):
+    def initUI(self, image_path, image_content, phyScrH):
         self.imgLabel = QLabel(self) # we don't need this label. what lable actually is? But: QLabel is used for displaying text or an image.
         if image_path:
             self.pixmap = QPixmap(image_path)
         else:
             self.pixmap = QPixmap()
             self.pixmap.loadFromData(image_content)
-        self.resize(self.pixmap.width(),self.pixmap.height())
+        # self.resize(self.pixmap.width(),self.pixmap.height())
+        if self.pixmap.height() + 35 > phyScrH:
+            self.resize(self.pixmap.width(),self.pixmap.height())
+        else:
+            self.resize(self.pixmap.width(),self.pixmap.height()+35)
         # self.imgLabel.setPixmap(self.pixmap)
 
         self.setWindowTitle("simed")
@@ -44,18 +48,13 @@ class Simed(QWidget):
 
     def initPanelUI(self):
         self.g_toolPanel = ToolPanel(self)
-        # self.g_toolPanel.setGeometry(500,500,600,600)
-        self.hLayout = QHBoxLayout(self)
-        self.hLayout.addWidget(self.g_toolPanel)
-        self.hLayout.setContentsMargins(0,0,0,0)
-        self.g_toolPanel.setObjectName("ToolPanel")
-        self.g_toolPanel.setStyleSheet("QWidget#control{background-color: #eaecf0;}")
-
-        self.g_toolPanel.setGeometry(self.rect().right()-543, self.rect().bottom()-6, 543, 25)
+        self.g_toolPanel.setGeometry(self.rect().right()-359, self.rect().bottom()-35, 350, 35)
+        self.g_toolPanel.resize(359, self.g_toolPanel.height())
+        self.g_toolPanel.setParent(self)
         self.g_toolPanel.show()
 
     def initStatus(self):
-        self.g_mousePressed = False # contained in event. maybe not needed
+        self.g_mousePressed = False
         self.g_mouseReleased = True
         self.g_drawStarted = False
         self.g_selectedTool = None
@@ -130,12 +129,8 @@ class Simed(QWidget):
         """
         # print(dir(e))
         if e.key() == Qt.Key_Escape:
-            # save the image to file for debugging
-            # self.pixmap.save("/tmp/fordebug.png", "PNG")
-            # self.grab().save("/tmp/fordebug.png", "PNG")
-            self.g_saveWithClipboard()
-            self.g_toolPanel.close()
-            self.close()
+            # self.g_saveWithClipboard()
+            self.g_quit()
         if e.modifiers() & Qt.ControlModifier:
             if e.key() == Qt.Key_Z:
                 self.g_undoDraw()
@@ -162,6 +157,11 @@ class Simed(QWidget):
         self.pixmap.save(pic, 'PNG')
         with open(pic, 'rb') as f:
             subprocess.Popen(['wl-copy'], stdin=f)
+        self.g_quit()
+
+    def g_quit(self):
+        self.g_toolPanel.close()
+        self.close()
 
     def mousePressEvent(self, e):
         print(type(e))
@@ -212,22 +212,65 @@ class ToolPanel(QWidget):
 
     def initToolLayout(self):
         self.rectBtn = QToolButton(self)
-        self.rectBtn.setIcon(QIcon('images/rect.jpg'))
-        self.rectBtn.setFixedSize(30,30)
+        self.rectBtn.setIcon(QIcon('images/rect.png'))
+        self.rectBtn.setFixedSize(35,35)
+        self.rectBtn.setIconSize(QSize(22,22))
         self.rectBtn.clicked.connect(self.mWindow.g_selectRect)
-        self.lineBtn = QToolButton(self)
-        self.lineBtn.setIcon(QIcon('images/line.jpg'))
-        self.lineBtn.setFixedSize(30,30)
-        self.lineBtn.clicked.connect(self.mWindow.g_selectLine)
         self.elliBtn = QToolButton(self)
-        self.elliBtn.setIcon(QIcon('images/elli.jpg'))
-        self.elliBtn.setFixedSize(30,30)
+        self.elliBtn.setIcon(QIcon('images/ellipse.png'))
+        self.elliBtn.setFixedSize(35,35)
+        self.elliBtn.setIconSize(QSize(23,23))
         self.elliBtn.clicked.connect(self.mWindow.g_selectEllipse)
-        self.hLayout = QHBoxLayout(self)
+        self.lineBtn = QToolButton(self)
+        self.lineBtn.setIcon(QIcon('images/arrow.png'))
+        self.lineBtn.setFixedSize(35,35)
+        self.lineBtn.setIconSize(QSize(22,22))
+        self.lineBtn.clicked.connect(self.mWindow.g_selectLine)
+
+        self.brushBtn = QToolButton(self)
+        self.brushBtn.setIcon(QIcon('images/brush.png'))
+        self.brushBtn.setFixedSize(35,35)
+        self.brushBtn.setIconSize(QSize(24,24))
+        self.mosaicBtn = QToolButton(self)
+        self.mosaicBtn.setIcon(QIcon('images/mosaic.png'))
+        self.mosaicBtn.setFixedSize(35,35)
+        self.mosaicBtn.setIconSize(QSize(22,22))
+        self.textBtn = QToolButton(self)
+        self.textBtn.setIcon(QIcon('images/text.png'))
+        self.textBtn.setFixedSize(35,35)
+        self.textBtn.setIconSize(QSize(22,22))
+        self.undoBtn = QToolButton(self)
+        self.undoBtn.setIcon(QIcon('images/undo.png'))
+        self.undoBtn.setFixedSize(35,35)
+        self.undoBtn.setIconSize(QSize(23,23))
+        self.undoBtn.clicked.connect(self.mWindow.g_undoDraw)
+        self.saveBtn = QToolButton(self)
+        self.saveBtn.setIcon(QIcon('images/save.png'))
+        self.saveBtn.setFixedSize(35,35)
+        self.saveBtn.setIconSize(QSize(22,22))
+        self.saveBtn.clicked.connect(self.mWindow.g_saveWithClipboard)
+        self.cancelBtn = QToolButton(self)
+        self.cancelBtn.setIcon(QIcon('images/cancel.png'))
+        self.cancelBtn.setFixedSize(35,35)
+        self.cancelBtn.setIconSize(QSize(22,22))
+        self.cancelBtn.clicked.connect(self.mWindow.g_quit)
+        self.finishBtn = QToolButton(self)
+        self.finishBtn.setIcon(QIcon('images/finish.png'))
+        self.finishBtn.setFixedSize(35,35)
+        self.finishBtn.setIconSize(QSize(25,23))
+        self.finishBtn.clicked.connect(self.mWindow.g_saveWithClipboard)
+
+        self.hLayout = QHBoxLayout()
         self.hLayout.addWidget(self.rectBtn)
-        self.hLayout.addWidget(self.lineBtn)
         self.hLayout.addWidget(self.elliBtn)
-        # self.hLayout.addStretch(1)
+        self.hLayout.addWidget(self.lineBtn)
+        self.hLayout.addWidget(self.brushBtn)
+        self.hLayout.addWidget(self.mosaicBtn)
+        self.hLayout.addWidget(self.textBtn)
+        self.hLayout.addWidget(self.undoBtn)
+        self.hLayout.addWidget(self.saveBtn)
+        self.hLayout.addWidget(self.cancelBtn)
+        self.hLayout.addWidget(self.finishBtn)
         self.hLayout.setSpacing(1)
         self.hLayout.setContentsMargins(0,0,0,0)
 
@@ -236,6 +279,8 @@ class ToolPanel(QWidget):
 
 if __name__ == '__main__':
     app = QApplication([])
+    phyScreenHeight = app.primaryScreen().size().height()
+    print("phyScreenHeight: {}".format(phyScreenHeight))
 
     if len(sys.argv) > 1:
         image_path = sys.argv[1]
@@ -246,5 +291,5 @@ if __name__ == '__main__':
             image_content = f.read()
             if not image_content:
                 sys.exit(1)
-    simed = Simed(image_path, image_content)
+    simed = Simed(image_path, image_content, phyScreenHeight)
     sys.exit(app.exec_())
