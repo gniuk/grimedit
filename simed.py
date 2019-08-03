@@ -38,9 +38,15 @@ class Simed(QWidget):
             self.pixmap.loadFromData(image_content)
         # self.resize(self.pixmap.width(),self.pixmap.height())
         if self.pixmap.height() + 35 > phyScrH:
-            self.resize(self.pixmap.width(),self.pixmap.height())
+            if self.pixmap.width() < 359:
+                self.resize(359, self.pixmap.height())
+            else:
+                self.resize(self.pixmap.width(), self.pixmap.height())
         else:
-            self.resize(self.pixmap.width(),self.pixmap.height()+35)
+            if self.pixmap.width() < 359:
+                self.resize(359, self.pixmap.height()+35)
+            else:
+                self.resize(self.pixmap.width(), self.pixmap.height()+35)
         # self.imgLabel.setPixmap(self.pixmap)
 
         self.setWindowTitle("simed")
