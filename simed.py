@@ -165,7 +165,6 @@ class Simed(QWidget):
         """
         # print(dir(e))
         if e.key() == Qt.Key_Escape:
-            # self.g_saveWithClipboard()
             self.g_quit()
         if e.modifiers() & Qt.ControlModifier:
             if e.key() == Qt.Key_Z:
@@ -214,6 +213,15 @@ class Simed(QWidget):
         self.g_toolPanel.close()
         self.close()
 
+    def g_doTextSave(self, oldX, oldY):
+        self.g_text = self.g_textEdit.toPlainText()
+        if len(self.g_text):
+            self.g_textEdit.setText("")
+            self.g_undoStack.append(QPixmap(self.pixmap))
+            self.g_drawTextPixmap(oldX, oldY)
+        self.g_isTextEditing = False
+        self.g_textEdit.hide()
+
     def mousePressEvent(self, e):
         print(type(e))
         oldX = self.startX
@@ -222,6 +230,7 @@ class Simed(QWidget):
         self.startY = e.y()
         # print(self.startX, self.startY)
         self.g_mousePressed = True
+
         if self.g_selectedTool == "Text":
             if self.g_isTextEditing == False:
                 self.g_isTextEditing = True
@@ -230,13 +239,11 @@ class Simed(QWidget):
                 # g_cursor = self.g_textEdit.textCursor()
                 # self.g_textEdit.setTextCursor(g_cursor)
             else:
-                self.g_isTextEditing = False
-                self.g_text = self.g_textEdit.toPlainText()
-                self.g_textEdit.setText("")
-                self.g_undoStack.append(QPixmap(self.pixmap))
-                self.g_drawTextPixmap(oldX, oldY)
+                self.g_doTextSave(oldX, oldY)
         else:
-            self.g_textEdit.hide()
+            self.g_doTextSave(oldX, oldY)
+            self.endX = self.startX
+            self.endY = self.startY
 
     def mouseReleaseEvent(self, e):
         self.endX = e.x()
@@ -292,11 +299,13 @@ class ToolPanel(QWidget):
         self.rectBtn.setFixedSize(35,35)
         self.rectBtn.setIconSize(QSize(22,22))
         self.rectBtn.clicked.connect(self.mWindow.g_selectRect)
+
         self.elliBtn = QToolButton(self)
         self.elliBtn.setIcon(QIcon(icondir+'ellipse.png'))
         self.elliBtn.setFixedSize(35,35)
         self.elliBtn.setIconSize(QSize(23,23))
         self.elliBtn.clicked.connect(self.mWindow.g_selectEllipse)
+
         self.lineBtn = QToolButton(self)
         self.lineBtn.setIcon(QIcon(icondir+'arrow.png'))
         self.lineBtn.setFixedSize(35,35)
@@ -311,26 +320,31 @@ class ToolPanel(QWidget):
         self.mosaicBtn.setIcon(QIcon(icondir+'mosaic.png'))
         self.mosaicBtn.setFixedSize(35,35)
         self.mosaicBtn.setIconSize(QSize(22,22))
+
         self.textBtn = QToolButton(self)
         self.textBtn.setIcon(QIcon(icondir+'text.png'))
         self.textBtn.setFixedSize(35,35)
         self.textBtn.setIconSize(QSize(22,22))
         self.textBtn.clicked.connect(self.mWindow.g_selectText)
+
         self.undoBtn = QToolButton(self)
         self.undoBtn.setIcon(QIcon(icondir+'undo.png'))
         self.undoBtn.setFixedSize(35,35)
         self.undoBtn.setIconSize(QSize(23,23))
         self.undoBtn.clicked.connect(self.mWindow.g_undoDraw)
+
         self.saveBtn = QToolButton(self)
         self.saveBtn.setIcon(QIcon(icondir+'save.png'))
         self.saveBtn.setFixedSize(35,35)
         self.saveBtn.setIconSize(QSize(22,22))
         self.saveBtn.clicked.connect(self.mWindow.g_saveWithClipboard)
+
         self.cancelBtn = QToolButton(self)
         self.cancelBtn.setIcon(QIcon(icondir+'cancel.png'))
         self.cancelBtn.setFixedSize(35,35)
         self.cancelBtn.setIconSize(QSize(22,22))
         self.cancelBtn.clicked.connect(self.mWindow.g_quit)
+
         self.finishBtn = QToolButton(self)
         self.finishBtn.setIcon(QIcon(icondir+'finish.png'))
         self.finishBtn.setFixedSize(35,35)
