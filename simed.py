@@ -13,11 +13,10 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow
 from PyQt5.QtGui import QPixmap, QPainter, QBrush, QPen
 # import ToolPanel
-from PyQt5.QtWidgets import QHBoxLayout, QToolButton
-from PyQt5.QtGui import QIcon, QScreen
+from PyQt5.QtWidgets import QHBoxLayout, QToolButton, QTextEdit
+from PyQt5.QtGui import QIcon, QScreen, QFont
 from PyQt5.QtCore import QSize
 
-# class Simed(QMainWindow):
 class Simed(QWidget):
 
     def __init__(self, image_path=None, image_content=None, phyScrH=1080):
@@ -36,7 +35,7 @@ class Simed(QWidget):
         else:
             self.pixmap = QPixmap()
             self.pixmap.loadFromData(image_content)
-        # self.resize(self.pixmap.width(),self.pixmap.height())
+
         if self.pixmap.height() + 35 > phyScrH:
             if self.pixmap.width() < 359:
                 self.resize(359, self.pixmap.height())
@@ -49,7 +48,7 @@ class Simed(QWidget):
                 self.resize(self.pixmap.width(), self.pixmap.height()+35)
         # self.imgLabel.setPixmap(self.pixmap)
 
-        self.setWindowTitle("simed")
+        self.setWindowTitle("grimedit")
         self.show()
 
     def initPanelUI(self):
@@ -64,19 +63,33 @@ class Simed(QWidget):
         self.g_mouseReleased = True
         self.g_drawStarted = False
         self.g_selectedTool = None
+        self.g_isTextEditing = False
+        self.startX = None
+        self.startY = None
         self.g_drawShapeView = {
                               None: self.g_drawNoneView,
                               'Line': self.g_drawLineView,
                               'Rec': self.g_drawRecView,
-                              'Elli': self.g_drawElliView
+                              'Elli': self.g_drawElliView,
+                              'Text': self.g_drawTextView
                              }
         self.g_drawShapePixmap = {
                                 'Line': self.g_drawLinePixmap,
                                 'Rec': self.g_drawRecPixmap,
-                                'Elli': self.g_drawElliPixmap
+                                'Elli': self.g_drawElliPixmap,
+                                'Text': self.g_drawTextPixmap
                                }
         self.g_penStyle = QPen(Qt.red, 4)
         self.g_undoStack = []     # push pixmap snapshot into stack before a drawing on current pixmap
+        self.g_textEdit = QTextEdit("", self)
+        self.g_text = ""
+        # self.g_textEdit.hide()
+        # self.g_textEdit.resize(400, 40)
+        font = QFont()
+        font.setPointSize(18)
+        self.g_textEdit.setFont(font)
+        self.g_textEdit.setStyleSheet("color:rgb(255,0,0); background:rgba(0,0,0,5%)")
+        self.g_textEdit.textChanged.connect(self.g_onTextChanged)
 
     def g_drawNoneView(self, painter):
         painter.setPen(self.g_penStyle)
@@ -124,6 +137,23 @@ class Simed(QWidget):
         painter.drawEllipse(self.startX,self.startY, self.endX-self.startX,self.endY-self.startY)
         painter.end()
         self.update()
+
+    def g_drawTextView(self,painter):
+        painter.setPen(self.g_penStyle)
+        painter.drawPixmap(self.pixmap.rect(), self.pixmap)
+        # the view is drawing automatically by QTextEdit's show.
+
+    def g_drawTextPixmap(self, oldX=None, oldY=None):
+        if oldX != None:
+            painter = QPainter(self.pixmap) # draw on pixmap
+            painter.setPen(self.g_penStyle)
+            font = QFont()
+            font.setPointSize(18)
+            painter.setFont(font)
+            painter.drawText(oldX+5, oldY+33, self.g_text) # the view of text not aligned with the draw, there may be some better method to deal with this problem.
+            painter.end()
+            self.update()
+            self.g_textEdit.hide()
 
     def paintEvent(self, e):
         painter = QPainter(self)
@@ -186,11 +216,27 @@ class Simed(QWidget):
 
     def mousePressEvent(self, e):
         print(type(e))
+        oldX = self.startX
+        oldY = self.startY
         self.startX = e.x()
         self.startY = e.y()
-        print(self.startX, self.startY)
+        # print(self.startX, self.startY)
         self.g_mousePressed = True
-        # if self.g_selectedTool == 1:
+        if self.g_selectedTool == "Text":
+            if self.g_isTextEditing == False:
+                self.g_isTextEditing = True
+                self.g_textEdit.setGeometry(self.startX, self.startY, 60, 40)
+                self.g_textEdit.show()
+                # g_cursor = self.g_textEdit.textCursor()
+                # self.g_textEdit.setTextCursor(g_cursor)
+            else:
+                self.g_isTextEditing = False
+                self.g_text = self.g_textEdit.toPlainText()
+                self.g_textEdit.setText("")
+                self.g_undoStack.append(QPixmap(self.pixmap))
+                self.g_drawTextPixmap(oldX, oldY)
+        else:
+            self.g_textEdit.hide()
 
     def mouseReleaseEvent(self, e):
         self.endX = e.x()
@@ -203,6 +249,7 @@ class Simed(QWidget):
                 self.g_undoStack.append(QPixmap(self.pixmap))
                 print("modified pixmap at {}, size = {} Bytes".format(self.pixmap, self.pixmap.__sizeof__()))
                 self.g_drawShapePixmap[self.g_selectedTool]()
+
     def mouseMoveEvent(self, e):
         # print(dir(e))
         self.endX = e.x(); self.endY = e.y()
@@ -210,6 +257,10 @@ class Simed(QWidget):
         if self.g_mousePressed:
             print(type(e),type(e.MouseButtonPress))
             self.update()
+
+    def g_onTextChanged(self):
+        print("---------- text changed ----------")
+        self.g_textEdit.resize(len(self.g_textEdit.toPlainText())*18+60, self.g_textEdit.document().size().height()+2)
 
     def g_selectRect(self):
         self.g_selectedTool = 'Rec'
@@ -223,6 +274,9 @@ class Simed(QWidget):
         self.g_selectedTool = 'Elli'
         print("Ellipse Tool selected")
 
+    def g_selectText(self):
+        self.g_selectedTool = 'Text'
+        print("Text Tool selected")
 
 
 class ToolPanel(QWidget):
@@ -261,6 +315,7 @@ class ToolPanel(QWidget):
         self.textBtn.setIcon(QIcon(icondir+'text.png'))
         self.textBtn.setFixedSize(35,35)
         self.textBtn.setIconSize(QSize(22,22))
+        self.textBtn.clicked.connect(self.mWindow.g_selectText)
         self.undoBtn = QToolButton(self)
         self.undoBtn.setIcon(QIcon(icondir+'undo.png'))
         self.undoBtn.setFixedSize(35,35)
