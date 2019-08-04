@@ -3,6 +3,8 @@
 
 """
  Copyright 2019 by gniuk. All rights reserved.
+ This file is part of the grimedit project:
+ https://github.com/gniuk/grimedit
 """
 
 import os
@@ -14,8 +16,8 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow
 from PyQt5.QtGui import QPixmap, QPainter, QBrush, QPen
 # import ToolPanel
 from PyQt5.QtWidgets import QHBoxLayout, QToolButton, QTextEdit
-from PyQt5.QtGui import QIcon, QScreen, QFont
-from PyQt5.QtCore import QSize
+from PyQt5.QtGui import QIcon, QScreen, QFont, QPolygon
+from PyQt5.QtCore import QSize, QLineF, QPointF
 
 class Simed(QWidget):
 
@@ -48,7 +50,7 @@ class Simed(QWidget):
                 self.resize(self.pixmap.width(), self.pixmap.height()+35)
         # self.imgLabel.setPixmap(self.pixmap)
 
-        self.setWindowTitle("grimedit")
+        self.setWindowTitle("Grimedit")
         self.show()
 
     def initPanelUI(self):
@@ -71,20 +73,20 @@ class Simed(QWidget):
                               'Line': self.g_drawLineView,
                               'Rec': self.g_drawRecView,
                               'Elli': self.g_drawElliView,
-                              'Text': self.g_drawTextView
+                              'Text': self.g_drawTextView,
+                              'Arrow': self.g_drawArrowView
                              }
         self.g_drawShapePixmap = {
                                 'Line': self.g_drawLinePixmap,
                                 'Rec': self.g_drawRecPixmap,
                                 'Elli': self.g_drawElliPixmap,
-                                'Text': self.g_drawTextPixmap
+                                'Text': self.g_drawTextPixmap,
+                                'Arrow': self.g_drawArrowPixmap
                                }
         self.g_penStyle = QPen(Qt.red, 4)
         self.g_undoStack = []     # push pixmap snapshot into stack before a drawing on current pixmap
         self.g_textEdit = QTextEdit("", self)
         self.g_text = ""
-        # self.g_textEdit.hide()
-        # self.g_textEdit.resize(400, 40)
         font = QFont()
         font.setPointSize(18)
         self.g_textEdit.setFont(font)
@@ -109,6 +111,56 @@ class Simed(QWidget):
         painter = QPainter(self.pixmap) # draw on pixmap
         painter.setPen(self.g_penStyle)
         painter.drawLine(self.startX,self.startY, self.endX,self.endY)
+        painter.end()
+        self.update()
+
+    def g_calcArrowPolygons(self):
+        g_line = QLineF(self.startX, self.startY, self.endX, self.endY)
+        v1 = g_line.unitVector()
+        v1.setLength(18.66)        # This length and the _v1 length can decide the arrow size
+        g_lineLength = g_line.length()
+        v2 = g_line.unitVector()
+        v2.setLength(g_lineLength - 18.66)
+        v1.translate(QPointF(v2.dx(), v2.dy()))
+        n1 = v1.normalVector()
+        n1.setLength(10.77)      # 18.66*1.732/3
+        n2 = n1.normalVector().normalVector()
+        _g_line = QLineF(self.endX, self.endY, self.startX, self.startY)
+        _v1 = _g_line.unitVector()
+        _v1.setLength(10)
+        # return g_line.p2(), _g_line.p2(), n1.p2(), n2.p2() # This is a good mistake :)
+        # return g_line.p2(), _v1.p2(), n1.p2(), n2.p2() # This is what I originally want
+
+        # Let's do more work to simulate WxWork or WeChat
+        p1=g_line.p2(); p2=_v1.p2(); p3=n1.p2(); p4=n2.p2();
+        p5 = QLineF(p2,p3).center(); p6 = QLineF(p2,p4).center()
+        p7 = g_line.p1()
+        return p1,p2,p3,p4,p5,p6,p7
+
+    def g_drawArrowView(self, painter):
+        painter.setPen(QPen(Qt.red, 1))
+        painter.setBrush(QBrush(Qt.red))
+        painter.drawPixmap(self.pixmap.rect(), self.pixmap)
+        if self.g_mousePressed:
+            p1,p2,p3,p4,p5,p6,p7 = self.g_calcArrowPolygons()
+            #       p1
+            # p3_ _ /\
+            #      /  \
+            #     /   p4
+            #    p7
+            # painter.drawLine(self.startX,self.startY, self.endX,self.endY)
+            painter.drawPolygon(p1, p2, p3)
+            painter.drawPolygon(p1, p2, p4)
+            painter.drawPolygon(p7, p5, p2, p6)
+    def g_drawArrowPixmap(self):
+        painter = QPainter(self.pixmap) # draw on pixmap
+        painter.setPen(QPen(Qt.red, 1))
+        painter.setBrush(QBrush(Qt.red))
+        p1,p2,p3,p4,p5,p6,p7 = self.g_calcArrowPolygons()
+        # painter.drawLine(self.startX,self.startY, self.endX,self.endY)
+        painter.drawPolygon(p1, p2, p3)
+        painter.drawPolygon(p1, p2, p4)
+        painter.drawPolygon(p7, p5, p2, p6)
         painter.end()
         self.update()
 
@@ -179,7 +231,7 @@ class Simed(QWidget):
     def genImagePath(self):
         picDir = os.path.expanduser('~') + '/Picture'
         try:
-            # Maybe the best compatibility :)
+            # Maybe the best compatibility to mkdir in python :)
             os.mkdir(picDir)
         except:
             pass
@@ -238,6 +290,7 @@ class Simed(QWidget):
                 self.g_textEdit.show()
                 # g_cursor = self.g_textEdit.textCursor()
                 # self.g_textEdit.setTextCursor(g_cursor)
+                # TODO: how to automatically get into TextEdit with the cursor showup?
             else:
                 self.g_doTextSave(oldX, oldY)
         else:
@@ -269,6 +322,7 @@ class Simed(QWidget):
         print("---------- text changed ----------")
         self.g_textEdit.resize(len(self.g_textEdit.toPlainText())*18+60, self.g_textEdit.document().size().height()+2)
 
+    # Actually we can just use lambda in the connect function
     def g_selectRect(self):
         self.g_selectedTool = 'Rec'
         print("Rectangle Tool selected")
@@ -276,6 +330,10 @@ class Simed(QWidget):
     def g_selectLine(self):
         self.g_selectedTool = 'Line'
         print("Line Tool selected")
+
+    def g_selectArrow(self):
+        self.g_selectedTool = 'Arrow'
+        print("Arrow Tool selected")
 
     def g_selectEllipse(self):
         self.g_selectedTool = 'Elli'
@@ -306,11 +364,11 @@ class ToolPanel(QWidget):
         self.elliBtn.setIconSize(QSize(23,23))
         self.elliBtn.clicked.connect(self.mWindow.g_selectEllipse)
 
-        self.lineBtn = QToolButton(self)
-        self.lineBtn.setIcon(QIcon(icondir+'arrow.png'))
-        self.lineBtn.setFixedSize(35,35)
-        self.lineBtn.setIconSize(QSize(22,22))
-        self.lineBtn.clicked.connect(self.mWindow.g_selectLine)
+        self.arrowBtn = QToolButton(self)
+        self.arrowBtn.setIcon(QIcon(icondir+'arrow.png'))
+        self.arrowBtn.setFixedSize(35,35)
+        self.arrowBtn.setIconSize(QSize(22,22))
+        self.arrowBtn.clicked.connect(self.mWindow.g_selectArrow)
 
         self.brushBtn = QToolButton(self)
         self.brushBtn.setIcon(QIcon(icondir+'brush.png'))
@@ -354,7 +412,7 @@ class ToolPanel(QWidget):
         self.hLayout = QHBoxLayout()
         self.hLayout.addWidget(self.rectBtn)
         self.hLayout.addWidget(self.elliBtn)
-        self.hLayout.addWidget(self.lineBtn)
+        self.hLayout.addWidget(self.arrowBtn)
         self.hLayout.addWidget(self.brushBtn)
         self.hLayout.addWidget(self.mosaicBtn)
         self.hLayout.addWidget(self.textBtn)
