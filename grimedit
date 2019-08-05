@@ -149,18 +149,20 @@ class Simed(QWidget):
             #     /   p4
             #    p7
             # painter.drawLine(self.startX,self.startY, self.endX,self.endY)
-            painter.drawPolygon(p1, p2, p3)
-            painter.drawPolygon(p1, p2, p4)
-            painter.drawPolygon(p7, p5, p2, p6)
+            # painter.drawPolygon(p1, p2, p3)
+            # painter.drawPolygon(p1, p2, p4)
+            # painter.drawPolygon(p7, p5, p2, p6)
+            painter.drawPolygon(p1, p3, p5, p7, p6, p4)
     def g_drawArrowPixmap(self):
         painter = QPainter(self.pixmap) # draw on pixmap
         painter.setPen(QPen(Qt.red, 1))
         painter.setBrush(QBrush(Qt.red))
         p1,p2,p3,p4,p5,p6,p7 = self.g_calcArrowPolygons()
         # painter.drawLine(self.startX,self.startY, self.endX,self.endY)
-        painter.drawPolygon(p1, p2, p3)
-        painter.drawPolygon(p1, p2, p4)
-        painter.drawPolygon(p7, p5, p2, p6)
+        # painter.drawPolygon(p1, p2, p3)
+        # painter.drawPolygon(p1, p2, p4)
+        # painter.drawPolygon(p7, p5, p2, p6)
+        painter.drawPolygon(p1, p3, p5, p7, p6, p4)
         painter.end()
         self.update()
 
