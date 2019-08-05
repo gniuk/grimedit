@@ -40,7 +40,6 @@ for_window [title="Grimedit"] floating enable
 1. Color choose is not implemented yet.
 2. Text edit is not perfect, and no font and font size to choose from, but it's enough to work.
 3. Mosaic is not implemented yet.
-4. Brush is not implemented yet.
 
 ## Notes
 
