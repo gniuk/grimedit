@@ -352,6 +352,8 @@ class ToolPanel(QWidget):
 
     def initToolLayout(self):
         icondir = os.path.dirname(os.path.abspath(__file__)) + '/icons/'
+        if not os.path.exists(icondir):
+            icondir = '/usr/share/grimedit/icons/'
         self.rectBtn = QToolButton(self)
         self.rectBtn.setIcon(QIcon(icondir+'rect.png'))
         self.rectBtn.setFixedSize(35,35)
