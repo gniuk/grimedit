@@ -229,13 +229,13 @@ class Simed(QWidget):
             self.update()
 
     def genImagePath(self):
-        picDir = os.path.expanduser('~') + '/Picture'
+        picDir = os.path.expanduser('~') + '/Pictures'
         try:
             # Maybe the best compatibility to mkdir in python :)
             os.mkdir(picDir)
         except:
             pass
-        screentShotDir = picDir + '/ScreenShot'
+        screentShotDir = picDir + '/ScreenShots'
         try:
             os.mkdir(screentShotDir)
         except:

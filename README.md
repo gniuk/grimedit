@@ -28,7 +28,7 @@ grim -g "$(slurp)" - | grimedit
 
 To make it more convenient:
 
-Bind a shotcut in your .config/sway/config, and make the window floating.
+Bind a shortcut in your .config/sway/config, and make the window floating.
 
 ```
 bindsym $mod+Shift+a exec grim -g "$(slurp)" - | grimedit
@@ -44,7 +44,7 @@ for_window [title="Grimedit"] floating enable
 
 ## Notes
 
-* The save button automatically saves the screenshot in ~/Picture/ScreenShot as YMD-h-m-s.png, and a copy to the clipboard.
+* The save button automatically saves the screenshot in ~/Pictures/ScreenShots as YMD-h-m-s.png, and a copy to the clipboard.
 
 * The escape key can quit the program with nothing saved.
 
