@@ -4,7 +4,7 @@ Grab image from a Wayland compositor using [grim] and [slurp].
 
 Draw simple shapes or add text on the image with grimedit.
 
-![](https://github.com/gniuk/grimedit/demo/demo.gif)
+![](https://github.com/gniuk/grimedit/blob/master/demo/demo.gif)
 
 ## Dependencies
 
@@ -30,7 +30,7 @@ To make it more convenient:
 
 Bind a shotcut in your .config/sway/config, and make the window floating.
 
-```sh
+```
 bindsym $mod+Shift+a exec grim -g "$(slurp)" - | grimedit
 for_window [title="Grimedit"] floating enable
 ```
