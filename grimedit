@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow
 from PyQt5.QtGui import QPixmap, QPainter, QBrush, QPen
 # import ToolPanel
 from PyQt5.QtWidgets import QHBoxLayout, QToolButton, QTextEdit
-from PyQt5.QtGui import QIcon, QScreen, QFont, QPolygon
+from PyQt5.QtGui import QIcon, QScreen, QFont, QPolygon, QPainterPath
 from PyQt5.QtCore import QSize, QLineF, QPointF
 
 class Simed(QWidget):
@@ -70,14 +70,14 @@ class Simed(QWidget):
         self.startY = None
         self.g_drawShapeView = {
                               None: self.g_drawNoneView,
-                              'Line': self.g_drawLineView,
+                              'Brush': self.g_drawBrushView,
                               'Rec': self.g_drawRecView,
                               'Elli': self.g_drawElliView,
                               'Text': self.g_drawTextView,
                               'Arrow': self.g_drawArrowView
                              }
         self.g_drawShapePixmap = {
-                                'Line': self.g_drawLinePixmap,
+                                'Brush': self.g_drawBrushPixmap,
                                 'Rec': self.g_drawRecPixmap,
                                 'Elli': self.g_drawElliPixmap,
                                 'Text': self.g_drawTextPixmap,
@@ -92,6 +92,8 @@ class Simed(QWidget):
         self.g_textEdit.setFont(font)
         self.g_textEdit.setStyleSheet("color:rgb(255,0,0); background:rgba(0,0,0,5%)")
         self.g_textEdit.textChanged.connect(self.g_onTextChanged)
+
+        self.g_curvepath = None
 
     def g_drawNoneView(self, painter):
         painter.setPen(self.g_penStyle)
@@ -114,6 +116,19 @@ class Simed(QWidget):
         painter.end()
         self.update()
 
+    def g_drawBrushView(self, painter):
+        painter.setPen(self.g_penStyle)
+        painter.drawPixmap(self.pixmap.rect(), self.pixmap)
+        if self.g_mousePressed:
+            painter.drawPath(self.g_curvepath)
+
+    def g_drawBrushPixmap(self):
+        painter = QPainter(self.pixmap) # draw on pixmap
+        painter.setPen(self.g_penStyle)
+        painter.drawPath(self.g_curvepath)
+        painter.end()
+        self.update()
+
     def g_calcArrowPolygons(self):
         g_line = QLineF(self.startX, self.startY, self.endX, self.endY)
         v1 = g_line.unitVector()
@@ -125,7 +140,7 @@ class Simed(QWidget):
         n1 = v1.normalVector()
         n1.setLength(10.77)      # 18.66*1.732/3
         n2 = n1.normalVector().normalVector()
-        _g_line = QLineF(self.endX, self.endY, self.startX, self.startY)
+        _g_line = QLineF(self.endX, self.endY, self.startX, self.startY) # The reverse line to get p2
         _v1 = _g_line.unitVector()
         _v1.setLength(10)
         # return g_line.p2(), _g_line.p2(), n1.p2(), n2.p2() # This is a good mistake :)
@@ -296,6 +311,9 @@ class Simed(QWidget):
             else:
                 self.g_doTextSave(oldX, oldY)
         else:
+            if self.g_selectedTool == "Brush":
+                self.g_curvepath = QPainterPath()
+                self.g_curvepath.moveTo(self.startX, self.startY)
             self.g_doTextSave(oldX, oldY)
             self.endX = self.startX
             self.endY = self.startY
@@ -315,16 +333,17 @@ class Simed(QWidget):
     def mouseMoveEvent(self, e):
         # print(dir(e))
         self.endX = e.x(); self.endY = e.y()
-        print("mousebuttonpress:{},{}".format(e.MouseButtonPress, type(e.MouseButtonPress)))
+        # print("mousebuttonpress:{},{}".format(e.MouseButtonPress, type(e.MouseButtonPress)))
         if self.g_mousePressed:
-            print(type(e),type(e.MouseButtonPress))
+            if self.g_selectedTool == "Brush":
+                self.g_curvepath.lineTo(self.endX, self.endY)
+            # print(type(e),type(e.MouseButtonPress))
             self.update()
 
     def g_onTextChanged(self):
         print("---------- text changed ----------")
         self.g_textEdit.resize(len(self.g_textEdit.toPlainText())*18+60, self.g_textEdit.document().size().height()+2)
 
-    # Actually we can just use lambda in the connect function
     def g_selectRect(self):
         self.g_selectedTool = 'Rec'
         print("Rectangle Tool selected")
@@ -344,6 +363,10 @@ class Simed(QWidget):
     def g_selectText(self):
         self.g_selectedTool = 'Text'
         print("Text Tool selected")
+
+    def g_selectBrush(self):
+        self.g_selectedTool = 'Brush'
+        print("Brush Tool selected")
 
 
 class ToolPanel(QWidget):
@@ -378,6 +401,7 @@ class ToolPanel(QWidget):
         self.brushBtn.setIcon(QIcon(icondir+'brush.png'))
         self.brushBtn.setFixedSize(35,35)
         self.brushBtn.setIconSize(QSize(24,24))
+        self.brushBtn.clicked.connect(self.mWindow.g_selectBrush)
         self.mosaicBtn = QToolButton(self)
         self.mosaicBtn.setIcon(QIcon(icondir+'mosaic.png'))
         self.mosaicBtn.setFixedSize(35,35)
