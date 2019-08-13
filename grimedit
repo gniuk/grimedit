@@ -92,6 +92,9 @@ class Simed(QWidget):
         self.g_textEdit.setFont(font)
         self.g_textEdit.setStyleSheet("color:rgb(255,0,0); background:rgba(0,0,0,5%)")
         self.g_textEdit.textChanged.connect(self.g_onTextChanged)
+        self.g_textEdit.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.g_textEdit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.g_textEdit.setAlignment(Qt.AlignLeft)
 
         self.g_curvepath = None
 
