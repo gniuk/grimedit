@@ -15,7 +15,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow
 from PyQt5.QtGui import QPixmap, QPainter, QBrush, QPen
 # import ToolPanel
-from PyQt5.QtWidgets import QHBoxLayout, QToolButton, QTextEdit
+from PyQt5.QtWidgets import QHBoxLayout, QToolButton, QTextEdit, QFrame
 from PyQt5.QtGui import QIcon, QScreen, QFont, QPolygon, QPainterPath
 from PyQt5.QtCore import QSize, QLineF, QPointF
 
@@ -95,6 +95,7 @@ class Simed(QWidget):
         self.g_textEdit.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.g_textEdit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.g_textEdit.setAlignment(Qt.AlignLeft)
+        self.g_textEdit.setFrameStyle(QFrame.Box)
 
         self.g_curvepath = None
 
