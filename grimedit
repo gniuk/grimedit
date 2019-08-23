@@ -31,7 +31,6 @@ class Simed(QWidget):
         self.initPanelUI()
 
     def initUI(self, image_path, image_content, phyScrH):
-        self.imgLabel = QLabel(self) # we don't need this label. what lable actually is? But: QLabel is used for displaying text or an image.
         if image_path:
             self.pixmap = QPixmap(image_path)
         else:
@@ -40,17 +39,26 @@ class Simed(QWidget):
 
         if self.pixmap.height() + 35 > phyScrH:
             if self.pixmap.width() < 359:
-                self.resize(359, self.pixmap.height())
+                self.g_width = 359
+                self.g_height = self.pixmap.height()
             else:
-                self.resize(self.pixmap.width(), self.pixmap.height())
+                self.g_width = self.pixmap.width()
+                self.g_height = self.pixmap.height()
         else:
             if self.pixmap.width() < 359:
-                self.resize(359, self.pixmap.height()+35)
+                self.g_width = 359
+                self.g_height = self.pixmap.height()+35
             else:
-                self.resize(self.pixmap.width(), self.pixmap.height()+35)
-        # self.imgLabel.setPixmap(self.pixmap)
+                self.g_width = self.pixmap.width()
+                self.g_height = self.pixmap.height()+35
+        self.resize(self.g_width, self.g_height)
 
         self.setWindowTitle("Grimedit")
+
+        self.g_border = QWidget(self)
+        self.g_border.setStyleSheet("border: 2px solid red")
+        self.g_border.resize(self.pixmap.width(), self.pixmap.height())
+
         self.show()
 
     def initPanelUI(self):
