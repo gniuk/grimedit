@@ -56,7 +56,7 @@ class Simed(QWidget):
         self.setWindowTitle("Grimedit")
 
         self.g_border = QWidget(self)
-        self.g_border.setStyleSheet("border: 2px solid red")
+        self.g_border.setStyleSheet("border: 2px dashed red")
         self.g_border.resize(self.pixmap.width(), self.pixmap.height())
 
         self.show()
