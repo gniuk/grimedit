@@ -465,6 +465,7 @@ class ToolPanel(QWidget):
         self.hLayout.setContentsMargins(0,0,0,0)
 
         self.setLayout(self.hLayout)
+        self.setStyleSheet("background:rgba(55,55,55,50%)")
 
 
 if __name__ == '__main__':
