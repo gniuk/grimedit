@@ -52,6 +52,7 @@ class Simed(QWidget):
                 self.g_width = self.pixmap.width()
                 self.g_height = self.pixmap.height()+35
         self.resize(self.g_width, self.g_height)
+        self.setStyleSheet("background-color: transparent")
 
         self.setWindowTitle("Grimedit")
 
