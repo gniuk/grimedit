@@ -2,7 +2,7 @@
 
 Grab image from a Wayland compositor using [grim] and [slurp].
 
-Draw simple shapes or add text on the image with grimedit.
+Draw simple shapes or add text on the image with grimedit. Save to ~/Pictures/ScreenShots/ or copy to clipboard.
 
 ![](https://github.com/gniuk/grimedit/blob/master/demo/demo.gif)
 
