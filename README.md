@@ -14,6 +14,8 @@ Draw simple shapes or add text on the image with grimedit. Save to ~/Pictures/Sc
 * [slurp]
 * [wl-clipboard]
 
+Just search and install them with your package manager.
+
 ## How to use
 
 ```sh
