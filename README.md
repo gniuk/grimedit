@@ -30,7 +30,7 @@ grim -g "$(slurp)" - | grimedit
 
 To make it more convenient:
 
-Bind a shortcut in your .config/sway/config, and make the window floating.
+Bind a shortcut in your window manager config, e.g. ~/.config/sway/config if you use sway, and make the window floating.
 
 ```
 bindsym $mod+Shift+a exec grim -g "$(slurp)" - | grimedit
