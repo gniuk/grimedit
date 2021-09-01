@@ -39,9 +39,9 @@ for_window [title="Grimedit"] floating enable
 
 ## TODO
 
-1. Color choose is not implemented yet.
-2. Text edit is not perfect, and no font and font size to choose from, but it's enough to work.
-3. Mosaic is not implemented yet.
+1. More color options, currently only red.
+2. Mosaic.
+3. Text edit is not perfect, and no font and font size to choose from, but currently it's enough for me.
 
 ## Notes
 
