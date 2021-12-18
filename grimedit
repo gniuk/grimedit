@@ -355,7 +355,7 @@ class Simed(QWidget):
 
     def g_onTextChanged(self):
         print("---------- text changed ----------")
-        self.g_textEdit.resize(len(self.g_textEdit.toPlainText())*18+60, self.g_textEdit.document().size().height()+2)
+        self.g_textEdit.resize(len(self.g_textEdit.toPlainText())*18+60, int(self.g_textEdit.document().size().height())+2)
 
     def g_selectRect(self):
         self.g_selectedTool = 'Rec'
